@@ -6,5 +6,5 @@ class OpenWeatherAPI:
 
     def get_weather(self, city):
         url = f"https://api.openweathermap.org/data/2.5/weather?appid={self.api_key}&q={city}"
-        response = requests.get(url)
+        response = requests.get(url, verify=False)
         return response.json()
