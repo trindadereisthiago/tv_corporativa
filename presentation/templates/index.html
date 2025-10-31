@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="900"> <!-- Atualiza a cada 15min -->
+    <title>TV Corporativa</title>
+    <style>
+        body {
+            margin: 0;
+            background: #0d1117;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            font-size: 32px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        header {
+            background: #161b22;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 40px;
+            font-weight: bold;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            flex: 1;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .box {
+            background: #21262d;
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        footer {
+            background: #161b22;
+            padding: 20px;
+            font-size: 28px;
+            text-align: center;
+        }
+    </style>
+    <script>
+        function clock() {
+            const now = new Date();
+            document.getElementById("clock").innerHTML =
+                now.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
+        }
+        setInterval(clock, 1000);
+    </script>
+</head>
+
+<body onload="clock()">
+
+    <header>
+        <div>📊 Painel Industrial</div>
+        <div id="clock"></div>
+    </header>
+
+    <div class="content">
+
+        <div class="box">
+            <h2>🌤️ Clima — {{ weather.city }}</h2>
+            <p>Temperatura: {{ weather.current_temperature }}°C</p>
+        </div>
+
+        <div class="box">
+            <h2>📅 Previsão semanal</h2>
+            <ul>
+                {% for day in weather.forecast %}
+                <li>Min: {{ day.min }}°C — Max: {{ day.max }}°C</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+
+        <div class="box">
+            <h2>📢 Avisos</h2>
+            <p>Bem-vindos à TV Corporativa!</p>
+            <p>Segurança é prioridade ✅</p>
+        </div>
+
+        <div class="box">
+            <h2>🏭 Produção</h2>
+            <p>Indicadores em breve...</p>
+        </div>
+
+        <div class="box">
+            <h2>📦 Qualidade</h2>
+            <p>Dados em breve...</p>
+        </div>
+
+    </div>
+
+    <footer>
+        Unidade Industrial — Jaraguá do Sul
+    </footer>
+
+</body>
+
+</html>

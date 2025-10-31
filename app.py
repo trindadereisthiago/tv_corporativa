@@ -1,11 +1,13 @@
-from domain.weather_service import WeatherService
-from infrastructure.weather_api import OpenWeatherAPI
+from flask import Flask
+from presentation.routes import router
+import os
 
-API_KEY = "7c6e17c43faf236d5cc939afab7dc5f3"
+# Caminho correto para a pasta templates dentro do módulo presentation
+template_folder = os.path.join(os.path.dirname(__file__), "presentation", "templates")
 
-if __name__=="__main__":
-    repo = OpenWeatherAPI(API_KEY)
-    service = WeatherService(repo)
+app = Flask(__name__, template_folder=template_folder)
 
-    result = service.get_weather("Jaraguá do Sul")
-    print(result)
+app.register_blueprint(router)
+
+if __name__ == "__main__":
+    app.run(debug=True)
