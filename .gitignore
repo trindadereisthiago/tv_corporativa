@@ -1,4 +1,25 @@
+# Virtual env
 venv/
+.env
+
+# Bytecode
 __pycache__/
 *.pyc
-.env
+*.pyo
+*.pyd
+
+# Unit test / coverage reports
+.pytest_cache/
+htmlcov/
+.coverage
+.coverage.*
+
+# VSCode
+.vscode/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
