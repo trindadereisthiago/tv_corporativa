@@ -5,8 +5,10 @@
     <meta charset="UTF-8">
     <meta http-equiv="refresh" content="900"> <!-- Atualiza a cada 15min -->
     <title>TV Corporativa</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.10/css/weather-icons.min.css">
     <style>
-        html, body {
+        html,
+        body {
             margin: 0;
             background: #0d1117;
             color: #fff;
@@ -79,45 +81,8 @@
             transition: 0.3s ease;
         }
 
-        .weather-card:hover {
-            transform: scale(1.05);
-            background: #1f2630;
-        }
-
-        .weekday {
-            font-weight: bold;
-            color: #58a6ff;
-            font-size: 26px;
-        }
-
-        .temp span {
-            display: block;
-            font-size: 20px;
-        }
-
-        .desc {
-            font-size: 22px;
-            opacity: 0.9;
-        }
-
-        .emoji {
-            font-size: 38px;
-            vertical-align: middle;
-        }
-
-        .title {
-            font-size: 42px;
-            margin-bottom: 10px;
-        }
-
-        .subtitle {
-            font-size: 36px;
-            margin: 10px 0;
-        }
-
         .weather-card.today {
             border: 2px solid #fff;
-            backdrop-filter: blur(6px);
             transform: scale(1.03);
             font-weight: 600;
         }
@@ -145,15 +110,28 @@
         .carousel-slide.active {
             opacity: 1;
         }
-    </style>
-    <script>
-        function clock() {
-            const now = new Date();
-            document.getElementById("clock").innerHTML =
-                now.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
+
+        .full-screen-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            /* Preenche sem sobras */
+            z-index: 9999;
+            /* Fica na frente de tudo */
         }
-        setInterval(clock, 1000);
-    </script>
+
+        body.fullscreen-video-mode {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: black;
+            /* Evita bordas aparecendo */
+        }
+        
+    </style>
 </head>
 
 <body onload="clock()">
@@ -169,12 +147,11 @@
         <div class="carousel-slide active">
             <div class="box weather-box">
                 <h2 class="title">
-                    <span class="emoji">🌤️</span>
+                    <span class="emoji" id="current-weather-icon" style="margin-right: 8px;"></span>
                     {{ weather.current_description | capitalize }} — {{ weather.current_temp }} °C
                 </h2>
 
                 <h3 class="subtitle">
-                    <span class="emoji">📅</span>
                     Previsão semanal
                 </h3>
 
@@ -182,7 +159,7 @@
                     {% for day in weather.weekly_forecast %}
                     <div class="weather-card">
                         <div class="weekday">{{ day.weekday }}</div>
-                        <div class="icon">🌦️</div>
+                        <div class="icon weather-icon" data-desc="{{ day.description }}"></div>
                         <div class="temp">
                             <span>Min: {{ day.min }}°C</span>
                             <span>Max: {{ day.max }}°C</span>
@@ -192,6 +169,13 @@
                     {% endfor %}
                 </div>
             </div>
+        </div>
+
+        <!-- SLIDE VIDEO -->
+        <div class="carousel-slide" id="video-slide">
+            <video id="videoElement" autoplay muted playsinline preload="auto" class="full-screen-video">
+                <source src="/static/videos/ESCOLHA DO NOME PERLITA.mp4" type="video/mp4">
+            </video>
         </div>
 
         <!-- SLIDE 2 — AVISOS -->
@@ -220,29 +204,85 @@
         </div>
     </div>
 
-
     <footer>
         Metalúrgico II — Jaraguá do Sul
     </footer>
 
     <script>
+        function clock() {
+            const now = new Date();
+            document.getElementById("clock").innerHTML =
+                now.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
+        }
+        setInterval(clock, 1000);
+
         let currentSlide = 0;
         const slides = document.querySelectorAll('.carousel-slide');
-        const totalSlides = slides.length;
+        const videoSlide = document.getElementById("video-slide");
+        const video = document.getElementById("videoElement");
 
         function showSlide(index) {
             slides.forEach(s => s.classList.remove('active'));
             slides[index].classList.add('active');
         }
 
-        // Trocar a cada 10 segundos
-        setInterval(() => {
-            currentSlide = (currentSlide + 1) % totalSlides;
+        function nextSlide() {
+            currentSlide++;
+
+            if (currentSlide >= slides.length) {
+                currentSlide = 0;
+            }
+
             showSlide(currentSlide);
-        }, 10000);
+
+            if (slides[currentSlide] === videoSlide) {
+                video.currentTime = 0;
+                video.play();
+
+                // segurança caso o evento onended falhe
+                let fallback = setTimeout(nextSlide, video.duration * 1000 + 500);
+
+                video.onended = () => {
+                    clearTimeout(fallback);
+                    nextSlide();
+                };
+
+            } else {
+                setTimeout(nextSlide, 10000); // 10s normal
+            }
+        }
+
+
+        // iniciar carrossel
+        setTimeout(nextSlide, 10000);
+
     </script>
 
+    <script>
+        function getWeatherEmoji(desc) {
+            desc = desc.toLowerCase();
 
+            if (desc.includes("chuva")) return "🌧️";
+            if (desc.includes("trovoada") || desc.includes("tempestade")) return "⛈️";
+            if (desc.includes("nublado") || desc.includes("nuv")) return "☁️";
+            if (desc.includes("neve")) return "❄️";
+            if (desc.includes("névoa") || desc.includes("neblina") || desc.includes("fog")) return "🌫️";
+            if (desc.includes("sol") || desc.includes("céu limpo") || desc.includes("limpo")) return "☀️";
+
+            return "🌤️"; // padrão
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("current-weather-icon").textContent =
+                getWeatherEmoji("{{ weather.current_description }}");
+
+            document.querySelectorAll(".weather-icon").forEach(el => {
+                const desc = el.dataset.desc;
+                el.textContent = getWeatherEmoji(desc);
+            });
+        });
+
+    </script>
 
 </body>
 
