@@ -1,5 +1,6 @@
 import requests
 from domain.interfaces.weather_repository_interface import WeatherRepositoryInterface
+from collections import defaultdict, Counter
 
 class OpenWeatherAPI(WeatherRepositoryInterface):
     def __init__(self, api_key: str):
@@ -11,22 +12,45 @@ class OpenWeatherAPI(WeatherRepositoryInterface):
         return response.json()
 
     def get_week_weather(self, city: str):
-        # 1) pegar latitude e longitude
-        url_geo = f"https://api.openweathermap.org/geo/1.0/direct?q={city}&appid={self.api_key}"
-        geo = requests.get(url_geo, verify=False).json()
+        # 1) Buscar previsão 5 dias (3h intervalos)
+        url = f"https://api.openweathermap.org/data/2.5/forecast"
+        params = {
+            "q": city,
+            "appid": self.api_key,
+            "units": "metric",
+            "lang": "pt_br"
+        }
 
-        if not geo or isinstance(geo, dict):
-            print("Erro.")
+        data = requests.get(url, params=params, verify=False).json()
+
+        # se a API retornar erro
+        if "list" not in data:
+            print("Erro ao buscar previsão semanal:", data)
             return None
-        
-        lat = geo[0]["lat"]
-        lon = geo[0]["lon"]
 
-        # 2) Previsão estendida
-        url_week = (
-            f"https://api.openweathermap.org/data/3.0/onecall?"
-            f"lat={lat}&lon={lon}&appid={self.api_key}&units=metric&exclude=hourly,minutely&lang=pt_br"
-        )
+        # 2) Agregar por dia
+        daily = defaultdict(lambda: {"min": 999, "max": -999, "weather": []})
 
-        week = requests.get(url_week, verify=False).json()
-        return week
+        for item in data["list"]:
+            date = item["dt_txt"].split(" ")[0]
+            temp = item["main"]["temp"]
+            desc = item["weather"][0]["description"]
+
+            daily[date]["min"] = min(daily[date]["min"], temp)
+            daily[date]["max"] = max(daily[date]["max"], temp)
+            daily[date]["weather"].append(desc)
+
+        # 3) Converter no formato parecido com OneCall (compatível com seu serviço)
+        formatted = {"daily": []}
+        for date, val in list(daily.items())[:7]:  # primeiros 7 dias
+            most_common_desc = Counter(val["weather"]).most_common(1)[0][0]
+            formatted["daily"].append({
+                "date": date,  # <<--- ADD AQUI
+                "temp": {
+                    "min": round(val["min"], 1),
+                    "max": round(val["max"], 1)
+                },
+                "weather": [{"description": most_common_desc}]
+            })
+
+        return formatted

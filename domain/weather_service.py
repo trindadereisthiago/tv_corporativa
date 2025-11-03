@@ -1,5 +1,6 @@
 from infrastructure.weather_api import OpenWeatherAPI
 from domain.interfaces.weather_repository_interface import WeatherRepositoryInterface
+from datetime import datetime
 
 class WeatherService:
     def __init__(self, weather_repository):
@@ -30,14 +31,29 @@ class WeatherService:
         current_description = today_weather.get("weather", [{}])[0].get("description") if today_weather else None
 
         # extrair previsões dos próximos dias
+        dias_pt = {
+            "Monday": "Segunda-feira",
+            "Tuesday": "Terça-feira",
+            "Wednesday": "Quarta-feira",
+            "Thursday": "Quinta-feira",
+            "Friday": "Sexta-feira",
+            "Saturday": "Sábado",
+            "Sunday": "Domingo"
+        }
+
         weekly_forecast = []
         if week_weather and "daily" in week_weather:
-            for day in week_weather["daily"][:7]:  # só 7 dias
+            for day in week_weather["daily"][:6]:
+                date = datetime.strptime(day["date"], "%Y-%m-%d")
+                weekday_en = date.strftime("%A")
+                weekday = dias_pt.get(weekday_en, weekday_en)
+
                 weekly_forecast.append({
+                    "weekday": weekday,
                     "min": day["temp"].get("min"),
                     "max": day["temp"].get("max"),
-                    "description": day["weather"][0].get("description")
-                })
+                    "description": day["weather"][0].get("description").capitalize()
+        })
 
         return {
             "current_temp": current_temp,

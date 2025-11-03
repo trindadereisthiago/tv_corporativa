@@ -6,7 +6,7 @@
     <meta http-equiv="refresh" content="900"> <!-- Atualiza a cada 15min -->
     <title>TV Corporativa</title>
     <style>
-        body {
+        html, body {
             margin: 0;
             background: #0d1117;
             color: #fff;
@@ -14,7 +14,10 @@
             font-size: 32px;
             display: flex;
             flex-direction: column;
-            height: 100vh;
+            height: 100%;
+            padding: 0;
+            width: 100%;
+            overflow: hidden;
         }
 
         header {
@@ -32,6 +35,9 @@
             flex: 1;
             padding: 20px;
             gap: 20px;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
         }
 
         .box {
@@ -45,6 +51,99 @@
             padding: 20px;
             font-size: 28px;
             text-align: center;
+        }
+
+        .weather-box {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .weather-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .weather-card {
+            background: #161b22;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            font-size: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
+            transition: 0.3s ease;
+        }
+
+        .weather-card:hover {
+            transform: scale(1.05);
+            background: #1f2630;
+        }
+
+        .weekday {
+            font-weight: bold;
+            color: #58a6ff;
+            font-size: 26px;
+        }
+
+        .temp span {
+            display: block;
+            font-size: 20px;
+        }
+
+        .desc {
+            font-size: 22px;
+            opacity: 0.9;
+        }
+
+        .emoji {
+            font-size: 38px;
+            vertical-align: middle;
+        }
+
+        .title {
+            font-size: 42px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 36px;
+            margin: 10px 0;
+        }
+
+        .weather-card.today {
+            border: 2px solid #fff;
+            backdrop-filter: blur(6px);
+            transform: scale(1.03);
+            font-weight: 600;
+        }
+
+        .carousel-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .carousel-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .carousel-slide.active {
+            opacity: 1;
         }
     </style>
     <script>
@@ -60,48 +159,90 @@
 <body onload="clock()">
 
     <header>
-        <div>📊 Painel Industrial</div>
+        <div>📊 Informações da Semana</div>
         <div id="clock"></div>
     </header>
 
-    <div class="content">
+    <div class="content carousel-container">
 
-        <div class="box">
-            <h2>🌤️ Clima — {{ weather.city }}</h2>
-            <p>Temperatura: {{ weather.current_temperature }}°C</p>
+        <!-- SLIDE 1 — CLIMA -->
+        <div class="carousel-slide active">
+            <div class="box weather-box">
+                <h2 class="title">
+                    <span class="emoji">🌤️</span>
+                    {{ weather.current_description | capitalize }} — {{ weather.current_temp }} °C
+                </h2>
+
+                <h3 class="subtitle">
+                    <span class="emoji">📅</span>
+                    Previsão semanal
+                </h3>
+
+                <div class="weather-grid">
+                    {% for day in weather.weekly_forecast %}
+                    <div class="weather-card">
+                        <div class="weekday">{{ day.weekday }}</div>
+                        <div class="icon">🌦️</div>
+                        <div class="temp">
+                            <span>Min: {{ day.min }}°C</span>
+                            <span>Max: {{ day.max }}°C</span>
+                        </div>
+                        <div class="desc">{{ day.description }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
         </div>
 
-        <div class="box">
-            <h2>📅 Previsão semanal</h2>
-            <ul>
-                {% for day in weather.forecast %}
-                <li>Min: {{ day.min }}°C — Max: {{ day.max }}°C</li>
-                {% endfor %}
-            </ul>
+        <!-- SLIDE 2 — AVISOS -->
+        <div class="carousel-slide">
+            <div class="box">
+                <h2>📢 Avisos</h2>
+                <p>Bem-vindos à TV Corporativa!</p>
+                <p>Segurança é prioridade ✅</p>
+            </div>
         </div>
 
-
-        <div class="box">
-            <h2>📢 Avisos</h2>
-            <p>Bem-vindos à TV Corporativa!</p>
-            <p>Segurança é prioridade ✅</p>
+        <!-- SLIDE 3 — PRODUÇÃO -->
+        <div class="carousel-slide">
+            <div class="box">
+                <h2>🏭 Produção</h2>
+                <p>Indicadores em breve...</p>
+            </div>
         </div>
 
-        <div class="box">
-            <h2>🏭 Produção</h2>
-            <p>Indicadores em breve...</p>
+        <!-- SLIDE 4 — QUALIDADE -->
+        <div class="carousel-slide">
+            <div class="box">
+                <h2>📦 Qualidade</h2>
+                <p>Dados em breve...</p>
+            </div>
         </div>
-
-        <div class="box">
-            <h2>📦 Qualidade</h2>
-            <p>Dados em breve...</p>
-        </div>
-
     </div>
 
+
     <footer>
-        Unidade Industrial — Jaraguá do Sul
+        Metalúrgico II — Jaraguá do Sul
     </footer>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.carousel-slide');
+        const totalSlides = slides.length;
+
+        function showSlide(index) {
+            slides.forEach(s => s.classList.remove('active'));
+            slides[index].classList.add('active');
+        }
+
+        // Trocar a cada 10 segundos
+        setInterval(() => {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            showSlide(currentSlide);
+        }, 10000);
+    </script>
+
+
 
 </body>
 
