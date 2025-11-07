@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="900"> <!-- Atualiza a cada 15min -->
+    <meta http-equiv="refresh" content="900">
     <title>TV Corporativa</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.10/css/weather-icons.min.css">
     <style>
@@ -32,65 +32,8 @@
         }
 
         .content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            flex: 1;
-            padding: 20px;
-            gap: 20px;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        .box {
-            background: #21262d;
-            padding: 20px;
-            border-radius: 12px;
-        }
-
-        footer {
-            background: #161b22;
-            padding: 20px;
-            font-size: 28px;
-            text-align: center;
-        }
-
-        .weather-box {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .weather-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin-top: 15px;
-        }
-
-        .weather-card {
-            background: #161b22;
-            border-radius: 10px;
-            padding: 15px;
-            text-align: center;
-            font-size: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
-            transition: 0.3s ease;
-        }
-
-        .weather-card.today {
-            border: 2px solid #fff;
-            transform: scale(1.03);
-            font-weight: 600;
-        }
-
-        .carousel-container {
             position: relative;
-            width: 100%;
-            height: 100%;
+            flex: 1;
             overflow: hidden;
         }
 
@@ -111,26 +54,45 @@
             opacity: 1;
         }
 
-        .full-screen-video {
-            position: fixed;
-            top: 0;
-            left: 0;
+        .box {
+            background: #21262d;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .weather-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .weather-card {
+            background: #161b22;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 24px;
+        }
+
+        .full-screen-video,
+        .full-screen-image {
             width: 100vw;
             height: 100vh;
             object-fit: cover;
-            /* Preenche sem sobras */
-            z-index: 9999;
-            /* Fica na frente de tudo */
         }
 
-        body.fullscreen-video-mode {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            background: black;
-            /* Evita bordas aparecendo */
+        footer {
+            background: #161b22;
+            padding: 20px;
+            font-size: 28px;
+            text-align: center;
         }
-        
+
+        .video-active header,
+        .video-active footer {
+            display: none;
+        }
     </style>
 </head>
 
@@ -142,71 +104,58 @@
     </header>
 
     <div class="content carousel-container">
-
-        <!-- SLIDE 1 — CLIMA -->
-        <div class="carousel-slide active">
+        {% for slide in slides %}
+        <!-- SLIDE DE CLIMA -->
+        {% if slide.type == "weather" %}
+        <div class="carousel-slide {% if loop.first %}active{% endif %}">
             <div class="box weather-box">
-                <h2 class="title">
-                    <span class="emoji" id="current-weather-icon" style="margin-right: 8px;"></span>
+                <h2>
+                    <span id="current-weather-icon" style="margin-right:8px;"></span>
                     {{ weather.current_description | capitalize }} — {{ weather.current_temp }} °C
                 </h2>
-
-                <h3 class="subtitle">
-                    Previsão semanal
-                </h3>
-
+                <h3>Previsão semanal</h3>
                 <div class="weather-grid">
                     {% for day in weather.weekly_forecast %}
                     <div class="weather-card">
-                        <div class="weekday">{{ day.weekday }}</div>
-                        <div class="icon weather-icon" data-desc="{{ day.description }}"></div>
-                        <div class="temp">
-                            <span>Min: {{ day.min }}°C</span>
-                            <span>Max: {{ day.max }}°C</span>
-                        </div>
-                        <div class="desc">{{ day.description }}</div>
+                        <div>{{ day.weekday }}</div>
+                        <div class="weather-icon" data-desc="{{ day.description }}"></div>
+                        <div>Min: {{ day.min }}°C | Max: {{ day.max }}°C</div>
+                        <div>{{ day.description }}</div>
                     </div>
                     {% endfor %}
                 </div>
             </div>
         </div>
 
-        <!-- SLIDE VIDEO -->
-        <div class="carousel-slide" id="video-slide">
-            <video id="videoElement" autoplay muted playsinline preload="auto" class="full-screen-video">
-                <source src="/static/videos/ESCOLHA DO NOME PERLITA.mp4" type="video/mp4">
+        <!-- SLIDE DE TEXTO -->
+        {% elif slide.type == "text" %}
+        <div class="carousel-slide">
+            <div class="box">
+                <h2>{{ slide.title }}</h2>
+                {% for line in slide.content %}
+                <p>{{ line }}</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- SLIDE DE VÍDEO -->
+        {% elif slide.type == "video" %}
+        <div class="carousel-slide">
+            <video class="full-screen-video" autoplay muted playsinline preload="auto">
+                <source src="{{ url_for('static', filename=slide.file) }}" type="video/mp4">
             </video>
         </div>
 
-        <!-- SLIDE 2 — AVISOS -->
+        <!-- SLIDE DE IMAGEM -->
+        {% elif slide.type == "image" %}
         <div class="carousel-slide">
-            <div class="box">
-                <h2>📢 Avisos</h2>
-                <p>Bem-vindos à TV Corporativa!</p>
-                <p>Segurança é prioridade ✅</p>
-            </div>
+            <img src="{{ url_for('static', filename=slide.file) }}" class="full-screen-image" alt="Imagem do slide">
         </div>
-
-        <!-- SLIDE 3 — PRODUÇÃO -->
-        <div class="carousel-slide">
-            <div class="box">
-                <h2>🏭 Produção</h2>
-                <p>Indicadores em breve...</p>
-            </div>
-        </div>
-
-        <!-- SLIDE 4 — QUALIDADE -->
-        <div class="carousel-slide">
-            <div class="box">
-                <h2>📦 Qualidade</h2>
-                <p>Dados em breve...</p>
-            </div>
-        </div>
+        {% endif %}
+        {% endfor %}
     </div>
 
-    <footer>
-        Metalúrgico II — Jaraguá do Sul
-    </footer>
+    <footer>{{ footer }}</footer>
 
     <script>
         function clock() {
@@ -216,73 +165,69 @@
         }
         setInterval(clock, 1000);
 
-        let currentSlide = 0;
         const slides = document.querySelectorAll('.carousel-slide');
-        const videoSlide = document.getElementById("video-slide");
-        const video = document.getElementById("videoElement");
+        let currentSlide = 0;
 
         function showSlide(index) {
             slides.forEach(s => s.classList.remove('active'));
             slides[index].classList.add('active');
+
+            const video = slides[index].querySelector('video');
+            if (video) {
+                document.body.classList.add("video-active");
+            } else {
+                document.body.classList.remove("video-active");
+            }
         }
 
         function nextSlide() {
-            currentSlide++;
+            const current = slides[currentSlide];
+            const video = current.querySelector("video");
 
-            if (currentSlide >= slides.length) {
-                currentSlide = 0;
-            }
-
-            showSlide(currentSlide);
-
-            if (slides[currentSlide] === videoSlide) {
+            if (video) {
                 video.currentTime = 0;
                 video.play();
-
-                // segurança caso o evento onended falhe
-                let fallback = setTimeout(nextSlide, video.duration * 1000 + 500);
+                document.body.classList.add("video-active");
 
                 video.onended = () => {
-                    clearTimeout(fallback);
+                    document.body.classList.remove("video-active");
+                    currentSlide = (currentSlide + 1) % slides.length;
+                    showSlide(currentSlide);
                     nextSlide();
                 };
-
             } else {
-                setTimeout(nextSlide, 10000); // 10s normal
+                setTimeout(() => {
+                    currentSlide = (currentSlide + 1) % slides.length;
+                    showSlide(currentSlide);
+                    nextSlide();
+                }, 10000);
             }
         }
 
-
-        // iniciar carrossel
+        showSlide(0);
         setTimeout(nextSlide, 10000);
 
-    </script>
-
-    <script>
         function getWeatherEmoji(desc) {
             desc = desc.toLowerCase();
-
             if (desc.includes("chuva")) return "🌧️";
             if (desc.includes("trovoada") || desc.includes("tempestade")) return "⛈️";
             if (desc.includes("nublado") || desc.includes("nuv")) return "☁️";
             if (desc.includes("neve")) return "❄️";
-            if (desc.includes("névoa") || desc.includes("neblina") || desc.includes("fog")) return "🌫️";
+            if (desc.includes("névoa") || desc.includes("neblina")) return "🌫️";
             if (desc.includes("sol") || desc.includes("céu limpo") || desc.includes("limpo")) return "☀️";
-
-            return "🌤️"; // padrão
+            return "🌤️";
         }
 
         window.addEventListener("DOMContentLoaded", () => {
-            document.getElementById("current-weather-icon").textContent =
-                getWeatherEmoji("{{ weather.current_description }}");
-
+            const icon = document.getElementById("current-weather-icon");
+            if (icon) icon.textContent = getWeatherEmoji("{{ weather.current_description }}");
             document.querySelectorAll(".weather-icon").forEach(el => {
                 const desc = el.dataset.desc;
                 el.textContent = getWeatherEmoji(desc);
             });
         });
-
     </script>
+
 
 </body>
 

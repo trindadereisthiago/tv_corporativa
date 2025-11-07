@@ -1,0 +1,21 @@
+{
+  "slides": [
+    {
+      "type": "text",    
+      "content": [
+        "Bem-vindos ao Metalúrgico II",
+        "Segurança é prioridade ✅"
+      ],
+      "title": "📢 Avisos"
+    },
+    {
+      "type": "weather",
+      "title": "Clima da Semana"
+    },
+    {
+      "type": "image",
+      "file": "images/32164_(1).png"
+    }
+  ],
+  "footer": "Metalúrgico II — Jaraguá do Sul"
+}
