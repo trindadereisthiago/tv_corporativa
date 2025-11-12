@@ -90,10 +90,11 @@
             text-align: center;
         }
 
-        .video-active header,
-        .video-active footer {
+        body.media-active header,
+        body.media-active footer {
             display: none;
         }
+
     </style>
 </head>
 
@@ -174,10 +175,12 @@
             slides[index].classList.add('active');
 
             const video = slides[index].querySelector('video');
-            if (video) {
-                document.body.classList.add("video-active");
-            } else {
-                document.body.classList.remove("video-active");
+            const image = slides[index].querySelector('img');
+
+            document.body.classList.remove("media-active");
+
+            if (video || image) {
+                document.body.classList.add("media-active");
             }
         }
 
@@ -188,10 +191,10 @@
             if (video) {
                 video.currentTime = 0;
                 video.play();
-                document.body.classList.add("video-active");
+                document.body.classList.add("media-active");
 
                 video.onended = () => {
-                    document.body.classList.remove("video-active");
+                    document.body.classList.remove("media-active");
                     currentSlide = (currentSlide + 1) % slides.length;
                     showSlide(currentSlide);
                     nextSlide();

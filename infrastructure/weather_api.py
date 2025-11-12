@@ -47,8 +47,8 @@ class OpenWeatherAPI(WeatherRepositoryInterface):
             formatted["daily"].append({
                 "date": date,  # <<--- ADD AQUI
                 "temp": {
-                    "min": round(val["min"], 1),
-                    "max": round(val["max"], 1)
+                    "min": int(round(val["min"])),
+                    "max": int(round(val["max"]))
                 },
                 "weather": [{"description": most_common_desc}]
             })
