@@ -1,25 +1,29 @@
-# Imagem base leve com Python
+# Imagem base
 FROM python:3.11-slim
 
-# Define o diretório de trabalho dentro do container
+# Diretório de trabalho
 WORKDIR /app
 
-# Copia os arquivos do projeto
+# Instala libs do sistema (se for usar SQLAlchemy, cx_Oracle etc.)
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libaio1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copiar apenas dependências primeiro (melhor cache)
+COPY requirements.txt .
+
+# Instalar dependências
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copiar toda a aplicação
 COPY . .
 
-# Instala dependências do sistema (úteis para cx_Oracle, SQLAlchemy etc.)
-RUN apt-get update && apt-get install -y build-essential libaio1 && rm -rf /var/lib/apt/lists/*
-
-# Instala as dependências Python
-RUN pip install --no-cache-dir -r meu_requirements.txt
-
-# Define variáveis de ambiente do Flask
-ENV FLASK_APP=app.py
-ENV FLASK_RUN_HOST=0.0.0.0
+# Variáveis padrão do Flask
 ENV PYTHONUNBUFFERED=1
 
-# Expõe a porta padrão do Flask
+# Expor porta do container
 EXPOSE 5000
 
-# Define o comando padrão (modo produção com Gunicorn)
+# Comando de produção com Gunicorn
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
